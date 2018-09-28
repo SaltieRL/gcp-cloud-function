@@ -2,7 +2,12 @@ import base64
 import tempfile
 
 from carball.decompile_replays import analyze_replay_file
-
+try:
+    import config
+    API_KEY = config.API_KEY
+except:
+    print('No config file, anyone can access the function!')
+    API_KEY = None
 
 def decompile_replay(filename):
     proto_manager = analyze_replay_file(filename, filename + '.json')
@@ -24,6 +29,12 @@ def write_file(decoded):
 
 def parse_replay(request):
     from flask import jsonify
+    if API_KEY is not None:
+        if 'key' in request.args:
+            if request.args['key'] != API_KEY:
+                return jsonify({'status': 'Invalid API key.'}), 401
+        else:
+            return jsonify({'status': 'No API key supplied.'}), 401
     """HTTP Cloud Function.
     Args:
         request (flask.Request): The request object.
@@ -47,4 +58,7 @@ def parse_replay(request):
         'proto': encoded_proto,
         'pandas': encoded_pandas
     }
+
+    if 'webhook' in request.args:
+        r = request.post(request.args['webhook'], json=obj)
     return jsonify(obj)
