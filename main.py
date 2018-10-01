@@ -1,6 +1,7 @@
 import base64
 import tempfile
 import requests
+import urllib.parse
 
 from carball.decompile_replays import analyze_replay_file
 try:
@@ -61,5 +62,5 @@ def parse_replay(request):
     }
 
     if 'webhook' in request.args:
-        r = requests.post(request.args['webhook'], json=obj)
+        r = requests.post(urllib.parse.unquote(request.args['webhook']), json=obj)
     return jsonify(obj)
